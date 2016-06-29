@@ -1,0 +1,107 @@
+<html>
+<head>
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+<body>
+<input type="file" id="files" name="files[]" multiple />
+<output id="list"></output>
+
+<script>
+
+  var counts = {};
+
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                  f.size, ' bytes, last modified: ',
+                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                  '</li>');
+
+                  var reader = new FileReader();
+
+                        // Closure to capture the file information.
+                        reader.onload = (function(theFile) {
+                          return function(e) {
+                            var xmlDoc = $.parseXML( e.target.result );
+                            var $xml = $(xmlDoc);
+                            var orgname = $xml.find("report_metadata org_name").text();
+                            var reportid = $xml.find("report_metadata report_id").text();
+                            console.log(orgname);
+
+                            console.log(reportid);
+
+                            var records = $xml.find("record");
+                            console.log(records.length);
+
+                            var ds = [];
+
+                            for( var i =0; i < records.length; i++) {
+
+                              var sourceip = $(records[i]).find("row source_ip").text();
+                              var inarpa = sourceip.split(".").reverse().join(".")+".in-addr.arpa";
+                              var count = $(records[i]).find("row count").text();
+                              var disposition = $(records[i]).find("row policy_evaluated disposition").text();
+                              var rowdkim = $(records[i]).find("row policy_evaluated dkim").text();
+                              var rowspf = $(records[i]).find("row policy_evaluated spf").text();
+
+                              var headerfrom = $(records[i]).find("identifiers header_from").text();
+
+                              var details = counts[headerfrom] || { pass:0, fail: 0};
+
+                              if(rowdkim === "pass" || rowspf === "pass"){
+                                details.pass += parseInt(count);
+                              } else{
+                                // console.log("'"+rowdkim+"' '"+rowspf)
+                                details.fail += parseInt(count);
+                              }
+
+                              counts[headerfrom] = details;
+
+                              ds.push([headerfrom, sourceip, inarpa, count, disposition, rowdkim, rowspf]);
+                            }
+                            for(i in ds){
+                              var td = $("<tr></tr>");
+                              for(j in ds[i]){
+                                td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>")
+                              }
+
+                              $('#example').append(td);
+                            }
+
+                            $("#counts > tbody:last").children().remove();
+                            for(i in counts) {
+                              var td = $("<tr></tr>");
+                              td.append("<td>"+i+"</td>");
+                              td.append("<td>"+counts[i].pass+"</td>");
+                              td.append("<td>"+counts[i].fail+"</td>");
+                              $('#counts').append(td);
+                            }
+
+                          };
+                        })(f);
+
+                        // Read in the image file as a data URL.
+                        reader.readAsText(f);
+
+    }
+    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+</script>
+
+<table id="counts" class="compact" width="100%">
+<thead><td>Domain</td><td>Pass</td><td>Fail</td></thead>
+</table>
+
+<br><br>
+
+<table id="example" class="compact" width="100%">
+<thead><td>From</td><td>Raw Source IP</td><td>hostname</td><td>Count</td><td>Disposition</td><td>Row DKIM</td><td>Row SPF</td></thead>
+</table>
+</body>
+</html>
