@@ -107,8 +107,28 @@
                             for(i in ds){
                               var td = $("<tr></tr>");
                               for(j in ds[i]){
-                                td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>")
+                                if(j !=2 ){
+                                  td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>");
+                                } else {
+                                  var cellid = ds[i][j].replace(/\./gi,"");
+                                  td.append("<td id='cell"+cellid+"'>"+ds[i][j]+"</td>")
+                                }
                               }
+
+                              var result = function(l){
+                                var r = function(data) {
+                                  var q = data["Question"][0]["name"];
+                                  var a = data["Answer"][0]["data"];
+                                  console.log( "Data Loaded: "+q+ " " + a );
+                                  var cellid = '#cell'+q.replace(/\./gi,"");
+                                  $(cellid).text(a);
+                                }
+                                return r;
+                              }
+
+                              var ff = result(i);
+
+                              $.get( "https://dns.google.com/resolve", { name: ds[i][2], type: "PTR" }, ff, "json");
 
                               $('#example').append(td);
                             }
