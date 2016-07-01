@@ -1,10 +1,51 @@
 <html>
 <head>
+  <title>DMARC Viewer</title>
   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <style>
+  header { background: #2B8CC4; margin-bottom: 15px; }
+  header h1 { color: #fff; font-weight: bold; }
+  h2 { margin-top: 40px; }
+  .well h2 { margin: 0 0 15px 0; }
+  table th, table td { padding: 5px; border-bottom: #ddd 1px solid; }
+  table th { font-weight: bold; }
+  table tr:nth-child(even) { background: #f5f5f5; }
+  </style>
 </head>
 <body>
-<input type="file" id="files" name="files[]" multiple />
-<output id="list"></output>
+  <header>
+    <div class="container">
+      <h1>DMARC Viewer</h1>
+    </div>
+  </header>
+  <div class="container">
+    <!-- select files -->
+    <div class="well">
+      <h2>Select DMARC reports</h2>
+      <input type="file" id="files" name="files[]" multiple />
+    </div>
+
+    <!-- file list -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><h2 class="panel-title">Files processed</h2></div>
+      <div class="panel-body" id="list"></div>
+    </div>
+
+    <!-- counts -->
+    <h2>Counts</h2>
+    <table id="counts" width="100%">
+      <thead><tr><th>Domain</th><th>Pass</th><th>Fail</th></tr></thead>
+    </table>
+
+    <!-- data -->
+    <h2>Data</h2>
+    <table id="example" width="100%">
+      <thead><tr><th>From</th><th>Raw Source IP</th><th>hostname</th><th>Count</th><th>Disposition</th><th>Row DKIM</th><th>Row SPF</th></tr></thead>
+    </table>
+  </div>
+
+
 
 <script>
 
@@ -94,14 +135,5 @@
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
 </script>
 
-<table id="counts" class="compact" width="100%">
-<thead><td>Domain</td><td>Pass</td><td>Fail</td></thead>
-</table>
-
-<br><br>
-
-<table id="example" class="compact" width="100%">
-<thead><td>From</td><td>Raw Source IP</td><td>hostname</td><td>Count</td><td>Disposition</td><td>Row DKIM</td><td>Row SPF</td></thead>
-</table>
 </body>
 </html>
