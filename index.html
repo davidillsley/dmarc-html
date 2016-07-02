@@ -111,7 +111,7 @@
                                   td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>");
                                 } else {
                                   var cellid = ds[i][j].replace(/\./gi,"");
-                                  td.append("<td id='cell"+cellid+"'>"+ds[i][j]+"</td>")
+                                  td.append("<td id='cell"+cellid+"' class='address"+cellid+"'>"+ds[i][j]+"</td>")
                                 }
                               }
 
@@ -120,8 +120,8 @@
                                   var q = data["Question"][0]["name"];
                                   var a = data["Answer"][0]["data"];
                                   console.log( "Data Loaded: "+q+ " " + a );
-                                  var cellid = '#cell'+q.replace(/\./gi,"");
-                                  $(cellid).text(a);
+                                  var addrcell = '.address'+q.replace(/\./gi,"");
+                                  $(addrcell).text(a);
                                 }
                                 return r;
                               }
