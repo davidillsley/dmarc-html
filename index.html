@@ -2,6 +2,8 @@
 <head>
   <title>DMARC Viewer</title>
   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="pako.js"></script>
+  <script src="jszip.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <style>
   header { background: #2B8CC4; margin-bottom: 15px; }
@@ -67,89 +69,119 @@
                         // Closure to capture the file information.
                         reader.onload = (function(theFile) {
                           return function(e) {
-                            var xmlDoc = $.parseXML( e.target.result );
-                            var $xml = $(xmlDoc);
-                            var orgname = $xml.find("report_metadata org_name").text();
-                            var reportid = $xml.find("report_metadata report_id").text();
-                            console.log(orgname);
+                            if(theFile.name.endsWith(".gz")){
+                              var documentAsString = pako.inflate(e.target.result, {to: 'string'});
+                              console.log("documentAsString: "+documentAsString);
+                              processDocument(documentAsString);
+                            } else if(theFile.name.endsWith("zip")){
+                              console.log("zip path");
+                              JSZip.loadAsync(e.target.result)
+                                .then(function(zip) {
+                                zip.forEach(function (relativePath, zipEntry) {
+                                  zipEntry.async("string")
+                                    .then(function success(content) {
+                                      console.log(content);
+                                      var documentAsString = content;
+                                      console.log("documentAsString: "+documentAsString);
+                                      processDocument(documentAsString);
+                                    }, function error(e) {
+                                      console.log(e);
+                                    });
 
-                            console.log(reportid);
-
-                            var records = $xml.find("record");
-                            console.log(records.length);
-
-                            var ds = [];
-
-                            for( var i =0; i < records.length; i++) {
-
-                              var sourceip = $(records[i]).find("row source_ip").text();
-                              var inarpa = sourceip.split(".").reverse().join(".")+".in-addr.arpa";
-                              var count = $(records[i]).find("row count").text();
-                              var disposition = $(records[i]).find("row policy_evaluated disposition").text();
-                              var rowdkim = $(records[i]).find("row policy_evaluated dkim").text();
-                              var rowspf = $(records[i]).find("row policy_evaluated spf").text();
-
-                              var headerfrom = $(records[i]).find("identifiers header_from").text();
-
-                              var details = counts[headerfrom] || { pass:0, fail: 0};
-
-                              if(rowdkim === "pass" || rowspf === "pass"){
-                                details.pass += parseInt(count);
-                              } else{
-                                // console.log("'"+rowdkim+"' '"+rowspf)
-                                details.fail += parseInt(count);
-                              }
-
-                              counts[headerfrom] = details;
-
-                              ds.push([headerfrom, sourceip, inarpa, count, disposition, rowdkim, rowspf]);
+                                });
+                              });
+                              documentAsString = pako.ungzip(e.target.result, {to: 'string'});
+                            } else {
+                              var decoder = new TextDecoder("utf-8");
+                              var documentAsString = decoder.decode(e.target.result);
+                              console.log("documentAsString: "+documentAsString);
+                              processDocument(documentAsString);
                             }
-                            for(i in ds){
-                              var td = $("<tr></tr>");
-                              for(j in ds[i]){
-                                if(j !=2 ){
-                                  td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>");
-                                } else {
-                                  var cellid = ds[i][j].replace(/\./gi,"");
-                                  td.append("<td id='cell"+cellid+"' class='address"+cellid+"'>"+ds[i][j]+"</td>")
-                                }
-                              }
-
-                              var result = function(l){
-                                var r = function(data) {
-                                  var q = data["Question"][0]["name"];
-                                  var a = data["Answer"][0]["data"];
-                                  console.log( "Data Loaded: "+q+ " " + a );
-                                  var addrcell = '.address'+q.replace(/\./gi,"");
-                                  $(addrcell).text(a);
-                                }
-                                return r;
-                              }
-
-                              var ff = result(i);
-
-                              $.get( "https://dns.google.com/resolve", { name: ds[i][2], type: "PTR" }, ff, "json");
-
-                              $('#example').append(td);
-                            }
-
-                            $("#counts > tbody:last").children().remove();
-                            for(i in counts) {
-                              var td = $("<tr></tr>");
-                              td.append("<td>"+i+"</td>");
-                              td.append("<td>"+counts[i].pass+"</td>");
-                              td.append("<td>"+counts[i].fail+"</td>");
-                              $('#counts').append(td);
-                            }
-
                           };
                         })(f);
 
                         // Read in the image file as a data URL.
-                        reader.readAsText(f);
+                        reader.readAsArrayBuffer(f);
 
     }
     document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+  }
+
+  function processDocument(documentAsString) {
+    var xmlDoc = $.parseXML( documentAsString );
+    var $xml = $(xmlDoc);
+    var orgname = $xml.find("report_metadata org_name").text();
+    var reportid = $xml.find("report_metadata report_id").text();
+    console.log(orgname);
+
+    console.log(reportid);
+
+    var records = $xml.find("record");
+    console.log(records.length);
+
+    var ds = [];
+
+    for( var i =0; i < records.length; i++) {
+
+      var sourceip = $(records[i]).find("row source_ip").text();
+      var inarpa = sourceip.split(".").reverse().join(".")+".in-addr.arpa";
+      var count = $(records[i]).find("row count").text();
+      var disposition = $(records[i]).find("row policy_evaluated disposition").text();
+      var rowdkim = $(records[i]).find("row policy_evaluated dkim").text();
+      var rowspf = $(records[i]).find("row policy_evaluated spf").text();
+
+      var headerfrom = $(records[i]).find("identifiers header_from").text();
+
+      var details = counts[headerfrom] || { pass:0, fail: 0};
+
+      if(rowdkim === "pass" || rowspf === "pass"){
+        details.pass += parseInt(count);
+      } else{
+        // console.log("'"+rowdkim+"' '"+rowspf)
+        details.fail += parseInt(count);
+      }
+
+      counts[headerfrom] = details;
+
+      ds.push([headerfrom, sourceip, inarpa, count, disposition, rowdkim, rowspf]);
+    }
+    for(i in ds){
+      var td = $("<tr></tr>");
+      for(j in ds[i]){
+        if(j !=2 ){
+          td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>");
+        } else {
+          var cellid = ds[i][j].replace(/\./gi,"");
+          td.append("<td id='cell"+cellid+"' class='address"+cellid+"'>"+ds[i][j]+"</td>")
+        }
+      }
+
+      var result = function(l){
+        var r = function(data) {
+          var q = data["Question"][0]["name"];
+          var a = data["Answer"][0]["data"];
+          console.log( "Data Loaded: "+q+ " " + a );
+          var addrcell = '.address'+q.replace(/\./gi,"");
+          $(addrcell).text(a);
+        }
+        return r;
+      }
+
+      var ff = result(i);
+
+      $.get( "https://dns.google.com/resolve", { name: ds[i][2], type: "PTR" }, ff, "json");
+
+      $('#example').append(td);
+    }
+
+    $("#counts > tbody:last").children().remove();
+    for(i in counts) {
+      var td = $("<tr></tr>");
+      td.append("<td>"+i+"</td>");
+      td.append("<td>"+counts[i].pass+"</td>");
+      td.append("<td>"+counts[i].fail+"</td>");
+      $('#counts').append(td);
+    }
   }
 
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
