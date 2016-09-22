@@ -1,0 +1,17 @@
+{
+  "name": "dmarc-html",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify index.js -o bundle.js",
+    "watch": "watchify index.js -o bundle.js --debug --verbose"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jszip": "^3.1.2",
+    "pako": "^1.0.3",
+    "request": "^2.75.0"
+  }
+}

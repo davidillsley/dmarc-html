@@ -1,4 +1,4 @@
-function file_to_xml(file, callback) {
+module.exports = function (file, callback) {
   var reader = new FileReader();
 
   reader.onload = (function(f, c) {
@@ -22,6 +22,7 @@ function processFile(file, event, callback) {
 
 function inflate(event, callback) {
   console.log("inflate path");
+  var pako = require('pako');
   var documentAsString = pako.inflate(event.target.result, {to: 'string'});
   console.log("documentAsString: "+documentAsString);
   callback(documentAsString);
@@ -29,6 +30,7 @@ function inflate(event, callback) {
 
 function unzip(event, callback) {
   console.log("zip path");
+  var JSZip = require("jszip");
   JSZip.loadAsync(event.target.result)
     .then(function(zip) {
       zip.forEach(function (relativePath, zipEntry) {

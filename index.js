@@ -12,6 +12,7 @@
                   f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
                   '</li>');
 
+      var file_to_xml = require('./filetoxml.js');
       file_to_xml(f, processDocument);
     }
     document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
@@ -47,7 +48,6 @@
       if(rowdkim === "pass" || rowspf === "pass"){
         details.pass += parseInt(count);
       } else{
-        // console.log("'"+rowdkim+"' '"+rowspf)
         details.fail += parseInt(count);
       }
 
@@ -65,7 +65,7 @@
           td.append("<td id='cell"+cellid+"' class='address"+cellid+"'>"+ds[i][j]+"</td>")
         }
       }
-
+      var ptr_lookup = require("./dns.js");
       ptr_lookup(ds[i][2], function(q, a){
         console.log( "Data Loaded: "+q+ " " + a );
         var addrcell = '.address'+q.replace(/\./gi,"");
@@ -84,3 +84,5 @@
       $('#counts').append(td);
     }
   }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);

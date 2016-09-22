@@ -2,11 +2,6 @@
 <head>
   <title>DMARC Viewer</title>
   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="pako.js"></script>
-  <script src="jszip.js"></script>
-  <script src="dns.js"></script>
-  <script src="filetoxml.js"></script>
-  <script src="index.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <style>
   header { background: #2B8CC4; margin-bottom: 15px; }
@@ -50,9 +45,6 @@
     </table>
   </div>
 
-<script>
-  document.getElementById('files').addEventListener('change', handleFileSelect, false);
-</script>
-
+  <script src="bundle.js"></script>
 </body>
 </html>
