@@ -1,4 +1,3 @@
-
   var counts = {};
 
   function handleFileSelect(evt) {
@@ -43,12 +42,18 @@
 
       var headerfrom = $(records[i]).find("identifiers header_from").text();
 
-      var details = counts[headerfrom] || { pass:0, fail: 0};
+      var details = counts[headerfrom] || { pass:0, fail: 0, quarantine: 0, reject: 0};
 
       if(rowdkim === "pass" || rowspf === "pass"){
         details.pass += parseInt(count);
       } else{
         details.fail += parseInt(count);
+      }
+
+      if(disposition === "quarantine") {
+        details.quarantine += parseInt(count);
+      } else if(disposition === "reject") {
+        details.reject += parseInt(count);
       }
 
       counts[headerfrom] = details;
@@ -81,6 +86,8 @@
       td.append("<td>"+i+"</td>");
       td.append("<td>"+counts[i].pass+"</td>");
       td.append("<td>"+counts[i].fail+"</td>");
+      td.append("<td>"+counts[i].quarantine+"</td>");
+      td.append("<td>"+counts[i].reject+"</td>");
       $('#counts').append(td);
     }
   }
