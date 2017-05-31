@@ -34,7 +34,26 @@
     for( var i =0; i < records.length; i++) {
 
       var sourceip = $(records[i]).find("row source_ip").text();
-      var inarpa = sourceip.split(".").reverse().join(".")+".in-addr.arpa";
+
+      var inarpa = "";
+      if(sourceip.includes(":")){
+        var blocks = sourceip.split(":");
+        var composed = "";
+        for(a in blocks) {
+          var padded = "0000"+blocks[a];
+          var trimmed = padded.substring(padded.length-4);
+          if (trimmed === "0000") {
+            console.log("multed");
+            trimmed = "0000".repeat(8-blocks.length+1);
+            console.log(trimmed);
+          }
+          composed = composed+trimmed;
+        }
+        inarpa = composed.split("").reverse().join(".")+".ip6.arpa";
+      } else {
+        inarpa = sourceip.split(".").reverse().join(".")+".in-addr.arpa";
+      }
+
       var count = $(records[i]).find("row count").text();
       var disposition = $(records[i]).find("row policy_evaluated disposition").text();
       var rowdkim = $(records[i]).find("row policy_evaluated dkim").text();
