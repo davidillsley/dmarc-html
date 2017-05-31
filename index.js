@@ -101,7 +101,14 @@
         $(addrcell).attr("title", prev);
       });
 
-      $('#example').append(td);
+      var tablename = "table"+ds[i][0].replace(/\./gi,"");
+      if(!$("#"+tablename).length) {
+        console.log("Creating section for from domain");
+        var table = $('<h2>'+ds[i][0]+'</h2><table id="'+tablename+'" width="100%"><thead><tr><th>From</th><th>Source</th><th>Count</th><th>Disposition</th><th>DKIM</th><th>SPF</th></tr></thead></table>');
+        $('#container').append(table);
+      }
+
+      $("#"+tablename).append(td);
     }
 
     $("#counts > tbody:last").children().remove();
@@ -109,7 +116,6 @@
       var td = $("<tr></tr>");
       td.append("<td>"+i+"</td>");
       td.append("<td>"+counts[i].pass+"</td>");
-      td.append("<td>"+counts[i].fail+"</td>");
       td.append("<td>"+counts[i].quarantine+"</td>");
       td.append("<td>"+counts[i].reject+"</td>");
       $('#counts').append(td);
