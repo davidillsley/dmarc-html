@@ -80,13 +80,13 @@
       ds.push([headerfrom, sourceip, inarpa, count, disposition, rowdkim, rowspf]);
     }
     for(i in ds){
-      var td = $("<tr></tr>");
+      var td = $("<tr class="+ds[i][4]+"></tr>");
       for(j in ds[i]){
         if(j !=2 ){
-          td.append("<td id='cell"+i+""+j+"'>"+ds[i][j]+"</td>");
+          td.append("<td id='cell"+i+""+j+"' class="+ds[i][4]+">"+ds[i][j]+"</td>");
         } else {
           var cellid = ds[i][j].replace(/\./gi,"");
-          td.append("<td id='cell"+cellid+"' class='address"+cellid+"'>"+ds[i][j]+"</td>")
+          td.append("<td id='cell"+cellid+"' class='address"+cellid+" "+ds[i][4]+"'>"+ds[i][j]+"</td>")
         }
       }
       var ptr_lookup = require("./dns.js");
