@@ -113,15 +113,17 @@
       $("#"+tablename).append(td);
     }
 
-    $("#counts > tbody:last").children().remove();
+    $("#counts tbody").remove();
+    var tbody = $("<tbody></tbody>");
     for(i in counts) {
       var td = $("<tr></tr>");
       td.append("<td>"+i+"</td>");
       td.append("<td>"+counts[i].pass+"</td>");
       td.append("<td>"+counts[i].quarantine+"</td>");
       td.append("<td>"+counts[i].reject+"</td>");
-      $('#counts').append(td);
+      $(tbody).append(td);
     }
+    $('#counts').append(tbody);
   }
 
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
