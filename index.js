@@ -1,3 +1,5 @@
+  var $ = require("jquery");
+
   var counts = {};
 
   function handleFileSelect(evt) {
