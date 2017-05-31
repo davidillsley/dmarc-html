@@ -82,18 +82,23 @@
     for(i in ds){
       var td = $("<tr class="+ds[i][4]+"></tr>");
       for(j in ds[i]){
-        if(j !=2 ){
-          td.append("<td id='cell"+i+""+j+"' class="+ds[i][4]+">"+ds[i][j]+"</td>");
-        } else {
-          var cellid = ds[i][j].replace(/\./gi,"");
+        if( j == 1 ){
+          var cellid = ds[i][2].replace(/\./gi,"");
           td.append("<td id='cell"+cellid+"' class='address"+cellid+" "+ds[i][4]+"'>"+ds[i][j]+"</td>")
+        } else if (j ==2 ) {
+          // var cellid = ds[i][2].replace(/\./gi,"");
+          // td.append("<td id='cell"+cellid+"' class='address"+cellid+" "+ds[i][4]+"'>"+ds[i][j]+"</td>")
+        }else {
+          td.append("<td id='cell"+i+""+j+"' class="+ds[i][4]+">"+ds[i][j]+"</td>");
         }
       }
       var ptr_lookup = require("./dns.js");
       ptr_lookup(ds[i][2], function(q, a){
         console.log( "Data Loaded: "+q+ " " + a );
         var addrcell = '.address'+q.replace(/\./gi,"");
+        var prev = $(addrcell).text();
         $(addrcell).text(a);
+        $(addrcell).attr("title", prev);
       });
 
       $('#example').append(td);
